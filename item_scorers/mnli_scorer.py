@@ -58,7 +58,11 @@ class MNLIScorer(ItemScorer):
                 entail_contradiction_logits = outputs[0][:,[0,2]]
                 # predictions = entail_contradiction_logits.softmax(dim=1)
                 T = self.config['item_scoring']['mnli_temp']
-                predictions = F.softmax(entail_contradiction_logits/T, dim=1)
+                if T == 0:
+                    unrounded_preds = F.softmax(entail_contradiction_logits, dim=1)
+                    predictions = torch.round(unrounded_preds)
+                else:
+                    predictions = F.softmax(entail_contradiction_logits/T, dim=1)
 
             #get entailement probs
             entailment_probs = predictions[:, 1].tolist()
